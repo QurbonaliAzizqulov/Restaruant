@@ -1,8 +1,7 @@
-import 'dart:io';
-
-import 'package:beginner/models/lang_provider.dart';
+import 'package:beginner/models/main_provider.dart';
 import 'package:beginner/models/mealser.dart';
-import 'package:beginner/scr/detalis/deatlis.dart';
+
+import 'package:beginner/scr/widgets/Product_item.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -21,74 +20,109 @@ class _DishespageState extends State<Dishespage> {
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(onWillPop: () {
-      _isitemselekted
-          ? setState(() {
-              _isitemselekted = false;
-            })
-          : exit(0);
-      return Future.value(false);
-    }, child: Consumer<Langprovider>(
+    return Consumer<Mainprovider>(
       builder: (context, data, child) {
         return Scaffold(
-          body: _isitemselekted
-              ? Detalispage(
-                  detalisindex: selekted,
-                )
-              : LayoutBuilder(
-                  builder: (BuildContext context, BoxConstraints constraints) {
-                    return buildColumn(constraints);
-                  },
-                ),
+          body: LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              return buildCustomScrollView(
+                  constraints); //buildSliver(constraints);
+            },
+          ),
         );
       },
-    ));
-  }
-
-  Column buildColumn(BoxConstraints constraints) {
-    int axiscoubt = 1;
-    var current = constraints.maxWidth;
-    if (current <= 500) {
-      axiscoubt = 1;
-    } else if (current > 500 && current <= 750) {
-      axiscoubt = 2;
-    } else if (current > 700 && current <= 1000) {
-      axiscoubt = 3;
-    } else {
-      axiscoubt = 4;
-    }
-
-    return Column(
-      children: [
-        Padding(
-          padding:  EdgeInsets.only(left: 20.0,right: 20),
-          child: SizedBox(
-            height: 50,
-            child: Text("""title.""".tr()),
-          ),
-        ),
-        Expanded(
-          child: GridView.builder(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 1, mainAxisExtent: 400, crossAxisSpacing: 20),
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(
-                    left: 25.0, right: 25, top: 25, bottom: 15),
-                child: meal(getMeals()[index], index),
-              );
-            },
-            itemCount: getMeals().length,
-          ),
-        )
-      ],
     );
   }
 
-  List<Meal>getMeals(){
-     switch(context.locale.toString()){
-       case 'uz_UZ':
-         {
+  CustomScrollView buildCustomScrollView(BoxConstraints constraints) {
+    var axiscount = 1;
+    var current = constraints.maxWidth;
+    if (current <= 555) {
+      axiscount = 1;
+    } else if (current > 555 && current <= 840) {
+      axiscount = 2;
+    } else if (current > 840 && current <= 1120) {
+      axiscount = 3;
+    } else {
+      axiscount = 4;
+    }
+    return CustomScrollView(
+      scrollDirection: Axis.vertical,
+      slivers: [
+        SliverAppBar(
+          shadowColor: Colors.transparent,
+          floating: true,
+          backgroundColor: Colors.yellow,
+          flexibleSpace: Padding(
+            padding: const EdgeInsets.only(left: 20.0, right: 20),
+            child: SizedBox(
+                child: Text(
+              """title""".tr(),
+              style: TextStyle(
+                  color: Colors.deepOrange, fontWeight: FontWeight.bold),
+            )),
+          ),
+          toolbarHeight: 50,
+        ),
+        const SliverAppBar(
+          backgroundColor: Colors.transparent,
+          toolbarHeight: 60,
+        ),
+        SliverGrid(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(
+                  left: 25.0,
+                  right: 25,
+                ),
+                child:FutureBuilder(
+                    future: getFavoritelistindex(),
+                    builder: (context,AsyncSnapshot<List<int>> snapshot){
+                      if(snapshot.hasData){
+                        if(snapshot.data!.contains(index)){
+                          return  Productitem(getMeals()[index], index,isFavorite: true,);
+                        }else{
+                          return  Productitem(getMeals()[index], index,isFavorite: false,);
+                        }
+                      }return CircularProgressIndicator();
+
+                },  )
+
+
+
+
+              );
+            },
+            childCount: getMeals().length,
+          ),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            mainAxisSpacing: 60,
+            crossAxisCount: axiscount,
+            mainAxisExtent: 382,
+          ),
+        ),
+      ],
+    );
+    // SliverGrid.builder(
+    //     padding: EdgeInsets.only(top: 60),
+    //     gridDelegate:SliverGridDelegateWithFixedCrossAxisCount(
+    //       mainAxisSpacing: 30,
+    //       crossAxisCount: axiscount, mainAxisExtent: 380,) ,
+    //     itemBuilder: (context, index) {
+    //       return Padding(
+    //         padding: const EdgeInsets.only(
+    //           left: 25.0, right: 25, ),
+    //         child: Productitem(meal:getMeals()[index],index: index),
+    //       );
+    //     },
+    //   itemCount: getMeals().length,)
+  }
+
+  List<Meal> getMeals() {
+    switch (context.locale.toString()) {
+      case 'uz_UZ':
+        {
           return Meal.mealUz;
         }
       case "ru_RU":
@@ -99,137 +133,13 @@ class _DishespageState extends State<Dishespage> {
         {
           return Meal.mealUs;
         }
-       default:return Meal.mealRu;
+      default:
+        return Meal.mealRu;
     }
   }
+  Future<List<int>> getFavoritelistindex(){
+    final mainprovider = Provider.of<Mainprovider>(context, listen: false);
+      return mainprovider.getSFavoriteList();
 
-
-  Widget meal(Meal meal, index) {
-    return Stack(
-      alignment: Alignment.center,
-      clipBehavior: Clip.none,
-      children: [
-        Positioned(
-          child: Card(
-            elevation: 45,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(22),
-            ),
-            child: Container(
-              height: MediaQuery.of(context).size.height * 0.48,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(22),
-                  color: meal.banercolor),
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(
-                      height: 75,
-                    ),
-                    Text(
-                      "| ${meal.taype}",
-                      style: const TextStyle(
-                        color: Color(0xff00195C),
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 10,
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.122,
-                      child: Text(meal.name!,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 24)),
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("Стоимость:"),
-                        Text(meal.coast!),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Image.asset("assets/images/Group1.png"),
-                            Text("  ${meal.time}"),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            Image.asset("assets/images/Group.png"),
-                            Text(" ${meal.inCount}"),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 4,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                            style: ButtonStyle(
-                              backgroundColor: MaterialStateProperty.all<Color>(
-                                  Color(0xff175B8F)),
-                              shape: MaterialStateProperty.all<
-                                  RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                              ),
-                            ),
-                            onPressed: () {},
-                            child: Icon(Icons.add)),
-                        SizedBox(
-                          height: 37,
-                          width: 110,
-
-                          child: ElevatedButton(
-                              style: ButtonStyle(
-                                backgroundColor: MaterialStateProperty.all<Color>(
-                                    const Color(0xff175B8F)),
-                                shape: MaterialStateProperty.all<
-                                    RoundedRectangleBorder>(
-                                  RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10)),
-                                ),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  selekted = index;
-                                  _isitemselekted = true;
-                                });
-                              },
-                              child:  Text("More".tr())),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-            top: -24,
-            right: -20,
-            child: Card(
-                color: Colors.transparent,
-                elevation: 30,
-                child: Image.asset(meal.imagUrl!)))
-      ],
-    );
   }
 }
