@@ -1,4 +1,10 @@
+
+
+
 import 'package:flutter/material.dart';
+
+
+import '../../models/main_provider.dart';
 
 class Salatspage extends StatelessWidget {
   const Salatspage({Key? key}) : super(key: key);
@@ -6,7 +12,14 @@ class Salatspage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Text("Salat"),),
+      body: Container(
+        child: Center(child: Text("salats"),),
+      ),
     );
+
+
+
+
   }
+
 }

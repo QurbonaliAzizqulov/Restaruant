@@ -1,5 +1,6 @@
 class Lang{
   String til;
   bool isactive;
-  Lang(this.til,this.isactive);
+  String flag;
+  Lang(this.til,this.isactive, this.flag);
 }
