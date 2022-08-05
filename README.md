@@ -1,4 +1,4 @@
-# restaruna_shashlik
+# restaruant_shashlik
 
 A new Flutter project.
 
