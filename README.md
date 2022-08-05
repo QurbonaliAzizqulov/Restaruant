@@ -1,4 +1,4 @@
-# beginner
+# restaruna_shashlik
 
 A new Flutter project.
 
